@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+
+import argparse
+import math
+
+map = {'kg': ('mass', 1000), # base: grams
+    'lb': ('mass', 453.592),
+    'oz': ('mass', 28.3495),
+    'g': ('mass', 1),
+
+    'km': ('dist', 1000), # base: meters
+    'mi': ('dist', 1609.34),
+    'ft': ('dist', 0.3048),
+
+    'mph': ('speed', 1.60934), # base: kmh
+    'mps': ('speed', 3.6),
+
+    'cup': ('volume', 8), # base: fl oz
+    'pint': ('volume', 16),
+    'quart': ('volume', 32),
+    'gallon': ('volume', 128),
+    'tbsp': ('volume', 0.5),
+    'tsp': ('volume', 1/6),
+    'liter': ('volume', 33.814),
+    'ml': ('volume', 0.033814)
+    }
+list_of_units = ", ".join(map.keys())
+
+
+def log(args):
+    return math.log(args.number, args.base)
+
+def conv(args):
+    try:
+        from_cat, from_rate = map[args.fromUnit]
+        to_cat, to_rate = map[args.toUnit]
+
+        if from_cat != to_cat:
+            print(f"error: cannot convert '{from_cat}' to '{to_cat}'")
+            return
+
+        return args.value*from_rate/to_rate
+    except KeyError as e:
+        print(f"error: unit {e} is not recognized.")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="calc is a versatile command-line calculator capable of " + 
+        "conversions among common units and natural log calculations."
+        + "\nTodo: conversions from number system bases, scientific calculator.",
+        formatter_class=argparse.RawDescriptionHelpFormatter) # to add breakline)
+    subparsers = parser.add_subparsers(dest="command", required=True, metavar="FUNCTION")
+
+    log_parser = subparsers.add_parser(
+        name="log", 
+        description="This function calculates the logarithm given a base and a number. Leave empty for natural log.",
+        help="Calculate logarithms")
+    log_parser.add_argument("base", type=float, help="The base of the logarithm")
+    log_parser.add_argument("number", type=float, help="The number to calculate the log of")
+    log_parser.set_defaults(handler=log)
+
+    conv_parser = subparsers.add_parser(
+        name="convert",
+        description="This function converts between units.",
+        help="Convert between units", 
+        epilog=f"Supported categories: weight, distance, speed\nSupported units: {list_of_units}",
+        formatter_class=argparse.RawDescriptionHelpFormatter) # to add breakline
+    conv_parser.add_argument("value", type=float, help="The number to convert")
+    conv_parser.add_argument("fromUnit", type=str, help="The unit to convert from")
+    conv_parser.add_argument("toUnit", type=str, help="The unit to convert to")
+    conv_parser.set_defaults(handler=conv)
+
+    args = parser.parse_args()
+    
+    if args.handler(args) is not None:
+        print(args.handler(args))
