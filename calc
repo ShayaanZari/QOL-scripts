@@ -3,7 +3,7 @@
 import argparse
 import math
 
-map = {'kg': ('mass', 1000), # base: grams
+units_map = {'kg': ('mass', 1000), # base: grams
     'lb': ('mass', 453.592),
     'oz': ('mass', 28.3495),
     'g': ('mass', 1),
@@ -11,9 +11,11 @@ map = {'kg': ('mass', 1000), # base: grams
     'km': ('dist', 1000), # base: meters
     'mi': ('dist', 1609.34),
     'ft': ('dist', 0.3048),
+    'm': ('dist', 1),
 
     'mph': ('speed', 1.60934), # base: kmh
     'mps': ('speed', 3.6),
+    'kmh': ('speed', 1),
 
     'cup': ('volume', 8), # base: fl oz
     'pint': ('volume', 16),
@@ -24,16 +26,57 @@ map = {'kg': ('mass', 1000), # base: grams
     'liter': ('volume', 33.814),
     'ml': ('volume', 0.033814)
     }
-list_of_units = ", ".join(map.keys())
+list_of_units = ", ".join(units_map.keys())
 
+si_map = {
+    'y': 10**-24, 'yocto': 10**-24,
+    'z': 10**-21, 'zepto': 10**-21,
+    'a': 10**-18, 'atto': 10**-18,
+    'f': 10**-15, 'femto': 10**-15,
+    'p': 10**-12, 'pico': 10**-12,
+    'n': 10**-9,  'nano': 1e-09,
+    'u': 10**-6,  'micro': 10**-6,
+    'm': 10**-3,  'milli': 10**-3,
+    'c': 10**-2,  'centi': 10**-2,
+    'd': 10**-1,  'deci': 10**-1,
+    'base': 1,    # base unit
+    'da': 10**1,  'deca': 10**1,
+    'h': 10**2,   'hecto': 10**2,
+    'k': 10**3,   'kilo': 10**3,
+    'M': 10**6,   'mega': 10**6,
+    'G': 10**9,   'giga': 10**9,
+    'T': 10**12,  'tera': 10**12,
+    'P': 10**15,  'peta': 10**15,
+    'E': 10**18,  'exa': 10**18,
+    'Z': 10**21,  'zetta': 10**21,
+    'Y': 10**24,  'yotta': 10**24,
+    'R': 10**27,  'ronna': 10**27,
+    'Q': 10**30,  'quetta': 10**30,
+    'r': 10**-27, 'ronto': 10**-27,
+    'q': 10**-30, 'quecto': 10**-30
+}
+
+list_of_prefixes = ", ".join(si_map.keys())
+
+def si(args):
+    try:
+        from_rate = si_map[args.fromUnit]
+        to_rate = si_map[args.toUnit]
+        result = args.value*from_rate/to_rate
+        rounded =  "{:.4e}".format(result) # force 4 decimal points
+        mantissa, exponent = rounded.split('e')
+        mantissa = mantissa.rstrip('0').rstrip('.') # remove unnecessary zeroes and decimal
+        return f"{mantissa}e{exponent}"
+    except KeyError as e:
+        print(f"error: unit {e} is not recognized.")
 
 def log(args):
     return math.log(args.number, args.base)
 
 def conv(args):
     try:
-        from_cat, from_rate = map[args.fromUnit]
-        to_cat, to_rate = map[args.toUnit]
+        from_cat, from_rate = units_map[args.fromUnit]
+        to_cat, to_rate = units_map[args.toUnit]
 
         if from_cat != to_cat:
             print(f"error: cannot convert '{from_cat}' to '{to_cat}'")
@@ -46,7 +89,7 @@ def conv(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="calc is a versatile command-line calculator capable of " + 
-        "conversions among common units and natural log calculations."
+        "conversions among common units of weight, speed, distance, and volume.\nIt can additionally do log calculations and translate between SI prefixes."
         + "\nTodo: conversions from number system bases, scientific calculator.",
         formatter_class=argparse.RawDescriptionHelpFormatter) # to add breakline)
     subparsers = parser.add_subparsers(dest="command", required=True, metavar="FUNCTION")
@@ -54,7 +97,7 @@ if __name__ == "__main__":
     log_parser = subparsers.add_parser(
         name="log", 
         description="This function calculates the logarithm given a base and a number. Leave empty for natural log.",
-        help="Calculate logarithms")
+        help="Calculate base logarithms")
     log_parser.add_argument("base", type=float, help="The base of the logarithm")
     log_parser.add_argument("number", type=float, help="The number to calculate the log of")
     log_parser.set_defaults(handler=log)
@@ -62,13 +105,22 @@ if __name__ == "__main__":
     conv_parser = subparsers.add_parser(
         name="convert",
         description="This function converts between units.",
-        help="Convert between units", 
-        epilog=f"Supported categories: weight, distance, speed\nSupported units: {list_of_units}",
+        help="Convert between units of weight, distance, speed, and volume", 
+        epilog=f"Supported categories: weight, distance, speed, volume\nSupported units: {list_of_units}",
         formatter_class=argparse.RawDescriptionHelpFormatter) # to add breakline
     conv_parser.add_argument("value", type=float, help="The number to convert")
-    conv_parser.add_argument("fromUnit", type=str, help="The unit to convert from")
-    conv_parser.add_argument("toUnit", type=str, help="The unit to convert to")
+    conv_parser.add_argument("fromUnit", type=str, help="The unit to convert from (e.g. lb, km, mph)")
+    conv_parser.add_argument("toUnit", type=str, help="The unit to convert to (e.g. kg, mi, kmh)")
     conv_parser.set_defaults(handler=conv)
+
+    si_parser = subparsers.add_parser(
+        name="si",
+        description="This function converts between SI prefixes.",
+        help="Convert between SI prefixes")
+    si_parser.add_argument("value", type=float, default=1.0, help="The value to convert")
+    si_parser.add_argument("fromUnit", type=str, help="The SI Prefix to convert from (e.g., kilo)")
+    si_parser.add_argument("toUnit", type=str, help="The SI prefix to convert to (e.g. mega)")
+    si_parser.set_defaults(handler=si)
 
     args = parser.parse_args()
     
