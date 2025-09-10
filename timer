@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+from rich.live import Live
+from rich.console import Console
+from time import sleep
+import random, sys
+
+def countdown(seconds):
+    for remaining in range(seconds, 0, -1):
+        mins, secs = divmod(remaining, 60)
+        yield f"Next event in: {mins:02d}:{secs:02d}"
+        sleep(1)
+
+def main():
+    console = Console()
+
+    minutes = int(sys.argv[1])
+    do_coinflip = len(sys.argv) >= 3
+    loop = len(sys.argv) == 4 # rough parsing until argparse
+
+    try:
+        while True:
+            with Live(transient=True) as live:
+                for msg in countdown(minutes * 60):
+                    live.update(msg)
+                live.update("")
+                live.refresh()
+
+                # countdown ends
+
+                if do_coinflip:
+                    flip = random.choice(['heads', 'tails'])
+                    console.print(f"[bold cyan]\nThe coin flipped... {flip}![/bold cyan]")
+                    if flip == 'heads':
+                        console.print(f"クッキーの時間！ (Cookie time!)")
+                    if not loop:
+                        break
+
+    except KeyboardInterrupt:
+        console.print("[green]辞める! (Quitting!)[/green]")
+        sys.exit()
+
+if __name__ == "__main__":
+    main()
