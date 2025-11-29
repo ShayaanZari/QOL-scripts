@@ -12,6 +12,7 @@ In my personal knowledge base, I write courses, books, tutorials, etc with a sin
 	- Testimonies:
 		- Mentioned a couple times as one of the most fun books to read ([Reddit](https://www.reddit.com/r/math/comments/srueh1/what_are_some_of_your_favorite_textbooks/))
 		- The best mathematics book many have ever read ([Reddit](https://www.reddit.com/r/math/comments/n3woj8/comment/gwsw0hi/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button))
+
 I want to be able to develop a map of my knowledge base, which means I need to sort these text blocks into nodes. To start with, I define any text after a single dash to be an entity. Each entity should have its own node, and the details (defined by 2nd or more indents/dashes) can be collapsable inside the node.
 Right now, the script only counts entities. This project is my first attempt at writing beautiful Python code; I even used generators.
 
