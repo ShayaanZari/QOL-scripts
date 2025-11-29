@@ -1,3 +1,7 @@
+""" For now, this just counts the number of non-null dashed lines in given md files.
+    Please see README for details about the purpose of this script. 
+"""
+
 import click
 import re
 from pathlib import Path
