@@ -1,5 +1,5 @@
 # QOL-scripts
-Various quality of life CLI automation scripts for efficient day-to-day queries. The purpose of each script is described below, ordered by date.
+Various CLI automation scripts to make my day-to-day life easier. The purpose of each script is described below.
 
 ### timer
 A Python executable that sets up a live timer (via the Rich library), then runs a specific function (decided by input argument) after the timer ends, offering an option to loop. Currently in baby stages, with plans for ASCII art, streaming RSS feeds / curl input, and running local apps. 
